@@ -27,7 +27,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -142,7 +142,6 @@
   <ItemGroup>
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Level.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Ruleset.cpp" />
     <ClCompile Include="Tile.cpp" />
   </ItemGroup>

@@ -2,6 +2,6 @@
 
 enum class TextType {
 	noun,
-	is,
+	is, 
 	property
 };

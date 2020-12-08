@@ -33,10 +33,12 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClInclude Include="PlayTest.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BehaviorTest.cpp" />
+    <ClCompile Include="LevelTest.cpp" />
     <ClCompile Include="PlayTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -44,10 +46,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RulesetTest.cpp" />
+    <ClCompile Include="TileTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NotBabaIsYou\NotBabaIsYou.vcxproj">
       <Project>{8fc45c2e-812d-414a-8dcd-c87720ea41f4}</Project>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -41,6 +41,7 @@ void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
 			}
 			else if (currTextType == TextType::property) {
 				AddPropertyRule(nounToApplyTo, text->GetReferredProperty().value());
+				segmentCounter = 0;
 			}
 			else {
 				segmentCounter = 0;
@@ -67,13 +68,19 @@ void Ruleset::ClearPendingTransformations() {
 	pendingTransformations.clear();
 }
 
+std::map<Noun, std::set<Property>> Ruleset::GetNounsToProperties() {
+	return nounsToProperties;
+}
+
 
 void Ruleset::AddPropertyRule(Noun n, Property p) {
 	std::set<Property> properties = nounsToProperties[n];
 	properties.insert(p);
+	nounsToProperties[n] = properties;
 
 	std::set<Noun> nouns = propertiesToNouns[p];
 	nouns.insert(n);
+	propertiesToNouns[p] = nouns;
 }
 
 void Ruleset::AddTransformation(Noun oldType, Noun newType) {

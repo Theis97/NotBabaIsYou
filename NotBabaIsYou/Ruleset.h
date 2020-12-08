@@ -22,6 +22,8 @@ public:
 	std::map<Noun, std::set<Noun>> GetPendingTransformations();
 	void ClearPendingTransformations();
 
+	std::map<Noun, std::set<Property>> GetNounsToProperties();
+
 private:
 	void AddPropertyRule(Noun n, Property p);
 	void AddTransformation(Noun oldType, Noun newType);

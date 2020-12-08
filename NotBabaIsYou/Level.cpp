@@ -2,6 +2,11 @@
 
 #include "Level.h"
 
+Level::Level() {
+	// The tests demanded a default constructor.
+	isWon = false;
+}
+
 Level::Level(int width, int height, std::vector<InitialEntityDetails> entityDetails) {
 	isWon = false;
 
@@ -15,9 +20,8 @@ Level::Level(int width, int height, std::vector<InitialEntityDetails> entityDeta
 	}
 
 	for (const auto &details : entityDetails) {
-		Entity e = Entity(details);
-		allEntities.push_back(e);
-		board[details.x][details.y].PlaceEntity(&e);
+		allEntities.push_back(std::make_unique<Entity>(details));
+		board[details.x][details.y].PlaceEntity(allEntities.back().get());
 	}
 	
 	UpdateRules();
@@ -25,6 +29,7 @@ Level::Level(int width, int height, std::vector<InitialEntityDetails> entityDeta
 
 bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveDirection) {
 	// TODO: verify that entities are actually from the same tile
+	// also refactor
 	int x = entities[0]->GetXPos();
 	int y = entities[0]->GetYPos();
 	switch (moveDirection) {
@@ -43,8 +48,10 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 	default:
 		break;
 	}
-
-	if (x < 0 || x >= board.size() || y < 0 || y >= board[0].size()) {
+	
+	unsigned int uX = x;
+	unsigned int uY = y;
+	if (uX < 0 || uX >= board.size() || uY < 0 || uY >= board[0].size()) {
 		return false;
 	}
 
@@ -53,6 +60,7 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 	if (canMove.has_value()) {
 		if (canMove.value()) {
 			for (auto& e : entities) {
+				e->Move(moveDirection);
 				board[x][y].PlaceEntity(e);
 			}
 			return true;
@@ -67,8 +75,10 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 		bool moveSucceeded = TryMoveFromSingleTile(pushables, moveDirection);
 		if (moveSucceeded) {
 			for (auto& e : entities) {
+				e->Move(moveDirection);
 				board[x][y].PlaceEntity(e);
 			}
+			return true;
 		}
 		else {
 			return false;
@@ -77,16 +87,17 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 
 }
 
-void Level::UpdateRules() {
+int Level::UpdateRules() {
 	// TODO: move current body of this function to "InitializeRules"
 	// also implement helper functions to check individual rows/columns
 	// and smarter rule change seeking strategy
 	// further in the future TODO: stop assuming that only 1 text can be found on a single tile
 
+	int textSegmentsTested = 0;
 	// Vertical
-	for (int x = 0; x < board.size(); x++) {
+	for (unsigned int x = 0; x < board.size(); x++) {
 		std::vector<Entity*> potentialRule;
-		for (int y = 0; y < board[0].size(); y++) {
+		for (unsigned int y = 0; y < board[0].size(); y++) {
 			std::vector<Entity*> textOnTile = board[x][y].GetEntities(Noun::text);
 			if (!textOnTile.empty()) {
 				potentialRule.push_back(textOnTile[0]);
@@ -95,19 +106,21 @@ void Level::UpdateRules() {
 				if (!potentialRule.empty()) {
 					rules.ParseRule(potentialRule);
 					potentialRule.clear();
+					textSegmentsTested++;
 				}
 			}
 		}
 		if (!potentialRule.empty()) {
 			rules.ParseRule(potentialRule);
 			potentialRule.clear();
+			textSegmentsTested++;
 		}
 	}
 
 	// Horizontal
-	for (int y = 0; y < board[0].size(); y++) {
+	for (unsigned int y = 0; y < board[0].size(); y++) {
 		std::vector<Entity*> potentialRule;
-		for (int x = 0; x < board.size(); x++) {
+		for (unsigned int x = 0; x < board.size(); x++) {
 			std::vector<Entity*> textOnTile = board[x][y].GetEntities(Noun::text);
 			if (!textOnTile.empty()) {
 				potentialRule.push_back(textOnTile[0]);
@@ -116,41 +129,44 @@ void Level::UpdateRules() {
 				if (!potentialRule.empty()) {
 					rules.ParseRule(potentialRule);
 					potentialRule.clear();
+					textSegmentsTested++;
 				}
 			}
 		}
 		if (!potentialRule.empty()) {
 			rules.ParseRule(potentialRule);
 			potentialRule.clear();
+			textSegmentsTested++;
 		}
 	}
+
+	return textSegmentsTested;
 }
 
 void Level::TransformEntities(Noun oldType, std::vector<Noun> newTypes) {
-	std::vector<Entity> entityBuffer;
+	std::vector<InitialEntityDetails> entitiesToCreate;
 	for (auto& e : allEntities) {
-		if (e.GetType() == oldType) {
-			e.Transform(newTypes[0]);
+		if (e->GetType() == oldType) {
+			e->Transform(newTypes[0]);
 		}
 		// Simultaneous transformations spawn new entities
-		for (int i = 1; i < newTypes.size(); i++) {
+		for (unsigned int i = 1; i < newTypes.size(); i++) {
 			InitialEntityDetails newEntityDetails;
 			newEntityDetails.type = newTypes[i];
-			newEntityDetails.x = e.GetXPos();
-			newEntityDetails.y = e.GetYPos();
+			newEntityDetails.x = e->GetXPos();
+			newEntityDetails.y = e->GetYPos();
 			if (newTypes[i] == Noun::text) {
 				newEntityDetails.textType = TextType::noun;
 				newEntityDetails.noun = oldType;
 			}
-			Entity newEntity = Entity(newEntityDetails);
-			entityBuffer.push_back(newEntityDetails);
+			entitiesToCreate.push_back(newEntityDetails);
 			
 		}
 	}
 
-	for (auto& e : entityBuffer) {
-		allEntities.push_back(e);
-		board[e.GetXPos()][e.GetYPos()].PlaceEntity(&allEntities.back());
+	for (auto& details : entitiesToCreate) {
+		allEntities.push_back(std::make_unique<Entity>(details));
+		board[details.x][details.y].PlaceEntity(allEntities.back().get());
 	}
 }
 
@@ -158,7 +174,7 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 	// TODO: split this function up a bit
 	std::vector<std::vector<Entity*>> playerControlledEntities;
 	for (auto& e : allEntities) {
-		if (rules.IsEntityProperty(e.GetType(), Property::you)) {
+		if (rules.IsEntityProperty(e->GetType(), Property::you)) {
 			// If there are multiple YOU entities standing on the same tile, 
 			// they must all be moved at once given the current implementation,
 			// where we combine verifying movement legality and actually making
@@ -167,16 +183,16 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 			// entities after the first one will not be able to follow
 			// TODO: consider separating verifying if a move is possible from
 			// actually making the movement.
-			bool locationDuplicate = false;
-			for (auto &location : playerControlledEntities) {
-				if (location[0]->GetXPos() == e.GetXPos() && location[0]->GetYPos() == e.GetYPos()) {
-					location.push_back(&e);
-					locationDuplicate = true;
+			bool positionDuplicate = false;
+			for (auto &position : playerControlledEntities) {
+				if (position[0]->GetXPos() == e->GetXPos() && position[0]->GetYPos() == e->GetYPos()) {
+					position.push_back(e.get());
+					positionDuplicate = true;
 					break;
 				}
 			}
-			if (!locationDuplicate) {
-				std::vector<Entity*> v{&e};
+			if (!positionDuplicate) {
+				std::vector<Entity*> v{e.get()};
 				playerControlledEntities.push_back(v);
 			}
 		}
@@ -190,7 +206,7 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 
 	for (auto& youGroup : playerControlledEntities) {
 		int oldX = youGroup[0]->GetXPos();
-		int oldY = youGroup[1]->GetYPos();
+		int oldY = youGroup[0]->GetYPos();
 		bool success = TryMoveFromSingleTile(youGroup, youMoveDirection);
 		if (success) {
 			for (auto &entity : youGroup) {
@@ -211,8 +227,8 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 	rules.ClearPendingTransformations();
 
 	bool win = false;
-	for (int x = 0; x < board.size(); x++) {
-		for (int y = 0; y < board[0].size(); y++) {
+	for (unsigned int x = 0; x < board.size(); x++) {
+		for (unsigned int y = 0; y < board[0].size(); y++) {
 			win = board[x][y].CheckWinCondition(&rules);
 		}
 	}
@@ -221,4 +237,16 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 	}
 
 	return true;
+}
+
+bool Level::GetIsWon() {
+	return isWon;
+}
+
+std::vector<Entity*> Level::GetAllEntities() {
+	std::vector<Entity*> entitiesToObserve;
+	for (int i = 0; i < allEntities.size(); i++) {
+		entitiesToObserve.push_back(allEntities[i].get());
+	}
+	return entitiesToObserve;
 }
