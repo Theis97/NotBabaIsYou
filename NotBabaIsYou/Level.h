@@ -7,27 +7,23 @@
 #include "Tile.h"
 #include "Entity.h"
 #include "Ruleset.h"
-
-struct InitialEntityDetails {
-	Noun initialType;
-	int initialX;
-	int initialY;
-	std::optional<TextType> textType;
-	std::optional<Noun> noun;
-	std::optional<Property> prop;
-};
+#include "InitialEntityDetails.h"
 
 class Level {
 public:
-	Level(int height, int width, std::vector<InitialEntityDetails> entityDetails);
+	Level(int width, int height, std::vector<InitialEntityDetails> entityDetails);
 
+	// Attempts to move each entitiy in entities (all assumed to be from the same tile) 
+	// in the direction given by moveDirection.
+	bool TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveDirection);
 	void UpdateRules();
-	void MoveEntity(Entity* entity, int x, int y);
-	void TransformEntities(Noun oldType, Noun newType);
-	void ProcessPlayerMove(Direction youMoveDirection);
+	void TransformEntities(Noun oldType, std::vector<Noun> newTypes);
+
+	bool ProcessPlayerMove(Direction youMoveDirection);
 
 private:
 	bool isWon;
+	std::vector<Entity> allEntities;
 	std::vector<std::vector<Tile>> board;
 	Ruleset rules;
 };

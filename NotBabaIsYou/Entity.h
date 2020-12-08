@@ -6,23 +6,28 @@
 #include "Ruleset.h"
 #include "TextType.h"
 #include "Property.h"
+#include "InitialEntityDetails.h"
 
 class Ruleset;
 
 class Entity {
 public:
-	Entity(Noun n, int x, int y);
-	Entity(Noun n, int x, int y, TextType t, Noun noun, Property referredProperty);
+	Entity(InitialEntityDetails e);
+
+	int GetXPos();
+	int GetYPos();
+	Noun GetType();
+	std::optional<TextType> GetTextType();
+	std::optional<Noun> GetNoun();
+	std::optional<Property> GetReferredProperty();
 
 	void Move(Direction direction);
 	void Transform(Noun newType);
 
-	void CheckProperties(Ruleset* rules);
-
 protected:
+	Noun type;
 	int xPos;
 	int yPos;
-	Noun type;
 	Direction orientation;
 	std::optional<TextType> textType;
 	std::optional<Noun> noun;

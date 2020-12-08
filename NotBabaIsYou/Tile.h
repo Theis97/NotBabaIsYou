@@ -7,25 +7,25 @@
 #include "Property.h"
 #include "Ruleset.h"
 #include "TextType.h"
-
+#include "InitialEntityDetails.h"
 
 class Tile {
 public:
-	void LinkNeighbor(Tile* neighbor, Direction direction);
+	void PlaceEntity(Entity* e);
+	void RemoveEntity(Entity* entityToRemove);
 
-	bool AttemptEntry(std::vector<Entity*> entities, Direction entryDirection);
+	bool CheckWinCondition(Ruleset* rules);
 
-	void CreateEntityHere(Noun type);
-	void CreateEntityHere(Noun type, std::optional<TextType> t, std::optional<Noun> noun, std::optional<Property> referredProperty);
-	void DestroyEntity(Entity* e);
-	void RemoveEntity(Entity* e);
+	// A tile that doesn't have a STOP entity but does have a PUSH entity on it 
+	// cannot tell if an entity can pass through it on its own. The surrounding
+	// tiles must be polled for open space to push the entity into.
+	std::optional<bool> canPassThrough(Ruleset* rules);
 
 	std::vector<Entity*> GetEntities();
 	std::vector<Entity*> GetEntities(Noun type);
-	std::vector<Entity*> GetEntities(Property p, Ruleset* r);
+	std::vector<Entity*> GetEntities(Property p, Ruleset* rules);
 
 private:
 	std::vector<Entity*> occupants;
-	std::map<Direction, Tile*> neighbors;
 };
 

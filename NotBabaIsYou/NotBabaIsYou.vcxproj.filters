@@ -56,5 +56,8 @@
     <ClInclude Include="Noun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InitialEntityDetails.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

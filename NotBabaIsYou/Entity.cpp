@@ -1,14 +1,18 @@
 #include "Entity.h"
 
-Entity::Entity(Noun n, int x, int y)
-	: type(n), xPos(x), yPos(y), orientation(Direction::down) {}
+Entity::Entity(InitialEntityDetails e) 
+	: type(e.type), xPos(e.x), yPos(e.y), textType(e.textType), noun(e.noun), referredProperty(e.prop), orientation(Direction::down) {}
 
 void Entity::Transform(Noun newType) {
+	if (newType == Noun::text) {
+		textType = TextType::noun;
+		noun = type;
+	}
 	type = newType;
 }
 
 void Entity::Move(Direction direction) {
-	// Assume that this will be a valid position
+	// Assumes that this will be a valid position
 	switch (direction)
 	{
 	case Direction::up:
@@ -27,4 +31,29 @@ void Entity::Move(Direction direction) {
 		break;
 	}
 	orientation = direction;
+}
+
+int Entity::GetXPos() {
+	return xPos;
+}
+
+int Entity::GetYPos() {
+	return yPos;
+}
+
+
+Noun Entity::GetType() {
+	return type;
+}
+
+std::optional<TextType> Entity::GetTextType() {
+	return textType;
+}
+
+std::optional<Noun> Entity::GetNoun() {
+	return noun;
+}
+
+std::optional<Property> Entity::GetReferredProperty() {
+	return referredProperty;
 }

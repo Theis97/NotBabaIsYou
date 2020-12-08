@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Direction.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="InitialEntityDetails.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="Property.h" />
     <ClInclude Include="Ruleset.h" />
