@@ -24,6 +24,8 @@ public:
 
 	std::map<Noun, std::set<Property>> GetNounsToProperties();
 
+	void SetRule(Noun n, Property p);
+
 private:
 	void AddPropertyRule(Noun n, Property p);
 	void AddTransformation(Noun oldType, Noun newType);

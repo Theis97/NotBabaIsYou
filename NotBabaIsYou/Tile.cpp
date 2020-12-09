@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Tile.h"
 
 void Tile::PlaceEntity(Entity* e) {
@@ -62,5 +63,5 @@ bool Tile::CheckWinCondition(Ruleset* rules) {
 	std::vector<Entity*> youEntities = GetEntities(Property::you, rules);
 	std::vector<Entity*> winEntities = GetEntities(Property::win, rules);
 
-	return !youEntities.empty() && !winEntities.empty();
+	return (!youEntities.empty()) && (!winEntities.empty());
 }

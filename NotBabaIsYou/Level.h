@@ -25,6 +25,8 @@ public:
 	bool GetIsWon();
 	std::vector<Entity*> GetAllEntities();
 
+	Ruleset* GetRules();
+
 private:
 	bool isWon;
 	std::vector<std::unique_ptr<Entity>> allEntities;

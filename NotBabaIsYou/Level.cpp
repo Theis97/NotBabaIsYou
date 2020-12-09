@@ -230,10 +230,14 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 	for (unsigned int x = 0; x < board.size(); x++) {
 		for (unsigned int y = 0; y < board[0].size(); y++) {
 			win = board[x][y].CheckWinCondition(&rules);
+			if (win) {
+				isWon = true;
+				break;
+			}
 		}
-	}
-	if (win) {
-		isWon = true;
+		if (win) {
+			break;
+		}
 	}
 
 	return true;
@@ -249,4 +253,8 @@ std::vector<Entity*> Level::GetAllEntities() {
 		entitiesToObserve.push_back(allEntities[i].get());
 	}
 	return entitiesToObserve;
+}
+
+Ruleset* Level::GetRules() {
+	return &rules;
 }

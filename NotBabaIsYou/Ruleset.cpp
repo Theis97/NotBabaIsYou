@@ -72,6 +72,10 @@ std::map<Noun, std::set<Property>> Ruleset::GetNounsToProperties() {
 	return nounsToProperties;
 }
 
+void Ruleset::SetRule(Noun n, Property p) {
+	AddPropertyRule(n, p);
+}
+
 
 void Ruleset::AddPropertyRule(Noun n, Property p) {
 	std::set<Property> properties = nounsToProperties[n];
