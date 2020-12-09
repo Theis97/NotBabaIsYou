@@ -5,10 +5,12 @@
 Level::Level() {
 	// The tests demanded a default constructor.
 	isWon = false;
+	turnCounter = 0;
 }
 
 Level::Level(int width, int height, std::vector<InitialEntityDetails> entityDetails) {
 	isWon = false;
+	turnCounter = 0;
 
 	board.resize(width);
 	board.shrink_to_fit();
@@ -74,6 +76,9 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 		std::vector<Entity*> pushables = board[x][y].GetEntities(Property::push, &rules);
 		bool moveSucceeded = TryMoveFromSingleTile(pushables, moveDirection);
 		if (moveSucceeded) {
+			for (auto &e : pushables) {
+				board[x][y].RemoveEntity(e);
+			}
 			for (auto& e : entities) {
 				e->Move(moveDirection);
 				board[x][y].PlaceEntity(e);
@@ -86,68 +91,65 @@ bool Level::TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveD
 	}
 
 }
-
-int Level::UpdateRules() {
-	// TODO: move current body of this function to "InitializeRules"
-	// also implement helper functions to check individual rows/columns
-	// and smarter rule change seeking strategy
-	// further in the future TODO: stop assuming that only 1 text can be found on a single tile
-
-	int textSegmentsTested = 0;
-	// Vertical
-	for (unsigned int x = 0; x < board.size(); x++) {
-		std::vector<Entity*> potentialRule;
-		for (unsigned int y = 0; y < board[0].size(); y++) {
-			std::vector<Entity*> textOnTile = board[x][y].GetEntities(Noun::text);
-			if (!textOnTile.empty()) {
-				potentialRule.push_back(textOnTile[0]);
-			}
-			else {
-				if (!potentialRule.empty()) {
-					rules.ParseRule(potentialRule);
-					potentialRule.clear();
-					textSegmentsTested++;
-				}
-			}
+void Level::CheckColumnForRules(int column) {
+	std::vector<Entity*> potentialRules;
+	for (int y = board[0].size() - 1; y >= 0; y--) {
+		std::vector<Entity*> textOnTile = board[column][y].GetEntities(Noun::text);
+		if (!textOnTile.empty()) {
+			potentialRules.push_back(textOnTile[0]);
 		}
-		if (!potentialRule.empty()) {
-			rules.ParseRule(potentialRule);
-			potentialRule.clear();
-			textSegmentsTested++;
+		else {
+			if (!potentialRules.empty()) {
+				rules.ParseRule(potentialRules);
+				potentialRules.clear();
+			}
 		}
 	}
+	if (!potentialRules.empty()) {
+		rules.ParseRule(potentialRules);
+		potentialRules.clear();
 
-	// Horizontal
-	for (unsigned int y = 0; y < board[0].size(); y++) {
-		std::vector<Entity*> potentialRule;
-		for (unsigned int x = 0; x < board.size(); x++) {
-			std::vector<Entity*> textOnTile = board[x][y].GetEntities(Noun::text);
-			if (!textOnTile.empty()) {
-				potentialRule.push_back(textOnTile[0]);
-			}
-			else {
-				if (!potentialRule.empty()) {
-					rules.ParseRule(potentialRule);
-					potentialRule.clear();
-					textSegmentsTested++;
-				}
-			}
-		}
-		if (!potentialRule.empty()) {
-			rules.ParseRule(potentialRule);
-			potentialRule.clear();
-			textSegmentsTested++;
-		}
 	}
-
-	return textSegmentsTested;
 }
 
+void Level::CheckRowForRules(int row) {
+	std::vector<Entity*> potentialRules;
+	for (int x = 0; x < board.size(); x++) {
+		std::vector<Entity*> textOnTile = board[x][row].GetEntities(Noun::text);
+		if (!textOnTile.empty()) {
+			potentialRules.push_back(textOnTile[0]);
+		}
+		else {
+			if (!potentialRules.empty()) {
+				rules.ParseRule(potentialRules);
+				potentialRules.clear();
+			}
+		}
+	}
+	if (!potentialRules.empty()) {
+		rules.ParseRule(potentialRules);
+		potentialRules.clear();
+
+	}
+}
+
+
+void Level::UpdateRules() {
+	for (int x = 0; x < board.size(); x++) {
+		CheckColumnForRules(x);
+	}
+
+	for (int y = board[0].size() - 1; y >= 0; y--) {
+		CheckRowForRules(y);
+	}
+}
+
+// newTypes must contain at least 1 entry
 void Level::TransformEntities(Noun oldType, std::vector<Noun> newTypes) {
 	std::vector<InitialEntityDetails> entitiesToCreate;
 	for (auto& e : allEntities) {
-		if (e->GetType() == oldType) {
-			e->Transform(newTypes[0]);
+		if ((e->GetType() == oldType) && (e->GetLastTransformation() != turnCounter)) {
+			e->Transform(newTypes[0], turnCounter);
 		}
 		// Simultaneous transformations spawn new entities
 		for (unsigned int i = 1; i < newTypes.size(); i++) {
@@ -221,8 +223,13 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 	std::map<Noun, std::set<Noun>> pendingTransformations = rules.GetPendingTransformations();
 	for (auto &transformation :  pendingTransformations) {
 		Noun oldType = transformation.first;
-		std::vector<Noun> newTypes(transformation.second.begin(), transformation.second.end());
-		TransformEntities(oldType, newTypes);
+		std::set<Noun> newTypeSet = transformation.second;
+
+		// <sameNoun> IS <sameNoun> prevents transformations
+		if (newTypeSet.find(oldType) == newTypeSet.end()) {
+			std::vector<Noun> newTypes(transformation.second.begin(), transformation.second.end());
+			TransformEntities(oldType, newTypes);
+		}
 	}
 	rules.ClearPendingTransformations();
 
@@ -240,6 +247,7 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 		}
 	}
 
+	turnCounter++;
 	return true;
 }
 
@@ -253,6 +261,10 @@ std::vector<Entity*> Level::GetAllEntities() {
 		entitiesToObserve.push_back(allEntities[i].get());
 	}
 	return entitiesToObserve;
+}
+
+std::vector<Entity*> Level::GetEntitiesAt(int x, int y) {
+	return board[x][y].GetEntities();
 }
 
 Ruleset* Level::GetRules() {

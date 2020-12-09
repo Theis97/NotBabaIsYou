@@ -68,7 +68,7 @@ void Ruleset::ClearPendingTransformations() {
 	pendingTransformations.clear();
 }
 
-std::map<Noun, std::set<Property>> Ruleset::GetNounsToProperties() {
+std::map<Noun, std::set<Property>> Ruleset::GetRulesByNoun() {
 	return nounsToProperties;
 }
 
@@ -90,4 +90,5 @@ void Ruleset::AddPropertyRule(Noun n, Property p) {
 void Ruleset::AddTransformation(Noun oldType, Noun newType) {
 	std::set<Noun> transformTypes = pendingTransformations[oldType];
 	transformTypes.insert(newType);
+	pendingTransformations[oldType] = transformTypes;
 }

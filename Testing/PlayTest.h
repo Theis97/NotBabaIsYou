@@ -1,7 +1,7 @@
 #pragma once
-#include "../NotBabaIsYou/Level.h"
+#include "BabaIsTest.h"
 
-class PlayTest : public testing::Test {
+class PlayTest : public BabaIsTest {
 protected:
 	PlayTest();
 

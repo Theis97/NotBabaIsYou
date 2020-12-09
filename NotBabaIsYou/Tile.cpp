@@ -41,10 +41,11 @@ std::vector<Entity*> Tile::GetEntities(Property p, Ruleset* rules) {
 std::optional<bool> Tile::canPassThrough(Ruleset* rules) {
 	bool pushablePresent = false;
 	for (auto& e : occupants) {
-		if (rules->IsEntityProperty(e->GetType(), Property::stop)) {
+		Noun type = e->GetType();
+		if (rules->IsEntityProperty(type, Property::stop) && !rules->IsEntityProperty(type, Property::push)) {
 			return false;
 		}
-		if (rules->IsEntityProperty(e->GetType(), Property::push)) {
+		if (rules->IsEntityProperty(type, Property::push)) {
 			pushablePresent = true;
 		}
 	}
@@ -57,7 +58,7 @@ std::optional<bool> Tile::canPassThrough(Ruleset* rules) {
 }
 
 bool Tile::CheckWinCondition(Ruleset* rules) {
-	if (occupants.size() <= 1) {
+	if (occupants.size() < 1) {
 		return false;
 	}
 	std::vector<Entity*> youEntities = GetEntities(Property::you, rules);

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "BabaIsTest.h"
 #include "PlayTest.h"
 
 // The tests in this test suite are meant to simulate typical gameplay
@@ -11,7 +12,7 @@ PlayTest::PlayTest() {
 	// Construct Level 0 from Baba Is You
 	for (int x = 11; x < 22; x++) {
 		entities.push_back(InitialEntityDetails { Noun::wall, x, 9});
-		entities.push_back(InitialEntityDetails { Noun::wall, x, 3});
+		entities.push_back(InitialEntityDetails { Noun::wall, x, 5});
 	}
 
 	for (int y = 6; y < 9; y++) {
@@ -44,35 +45,197 @@ PlayTest::PlayTest() {
 // Take 8 steps to the right and land on the flag.
 // There's also a rock that gets pushed along the way.
 TEST_F(PlayTest, StraightforwardSolution) {
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 7; i++) {
 		levelZero.ProcessPlayerMove(Direction::right);
 	}
 
+	EXPECT_FALSE(levelZero.GetIsWon());
+	levelZero.ProcessPlayerMove(Direction::right);
 	EXPECT_TRUE(levelZero.GetIsWon());
 }
 
-TEST_F(PlayTest, DISABLED_BabaIsYouBabaIsWin) {
+TEST_F(PlayTest, BabaIsYouBabaIsWin) {
 	// Push BABA IS YOU to the right beyond the walls, taking FLAG IS WIN with it near the end
 	// take the IS WIN from FLAG IS WIN to form BABA IS WIN vertically
-	// left x2, up x4, right x12, up x1, right x5, down x2, up x2, right x1, down x2, right x1, down x1, left x4, up x1, left x1, down x1, right x1, down x1, left x1, down x1, left x1, up x1
-	EXPECT_EQ(1, 1);
-	EXPECT_TRUE(true);
+
+	std::vector<Direction> moveSequence{ Direction::left, Direction::left };
+	AppendToVector(moveSequence, FormStraightSequence(4, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(12, Direction::right));
+	moveSequence.push_back(Direction::up);
+	AppendToVector(moveSequence, FormStraightSequence(6, Direction::right));
+	AppendToVector(moveSequence, FormNudgeSequence(2, Direction::down));
+	moveSequence.push_back(Direction::left);
+	moveSequence.push_back(Direction::down);
+	moveSequence.push_back(Direction::right);
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormNudgeSequence(4, Direction::left));
+	moveSequence.push_back(Direction::right);
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormStraightSequence(4, Direction::left));
+
+	for (auto &move : moveSequence) {
+		levelZero.ProcessPlayerMove(move);
+	}
+
+	EXPECT_FALSE(levelZero.GetIsWon());
+	levelZero.ProcessPlayerMove(Direction::left);
+	EXPECT_TRUE(levelZero.GetIsWon());
 }
 
-TEST_F(PlayTest, DISABLED_WallIsFlagIsWin) {
+TEST_F(PlayTest, WallIsFlagIsWin) {
 	// Take WALL IS from WALL IS STOP and move it up by FLAG IS WIN
-	EXPECT_EQ(1, 1);
-	EXPECT_TRUE(true);
+
+	std::vector<Direction> moveSequence{ Direction::left, Direction::left };
+	AppendToVector(moveSequence, FormStraightSequence(5, Direction::down));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::right));
+	moveSequence.push_back(Direction::up);
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::left));
+	moveSequence.push_back(Direction::down);
+	moveSequence.push_back(Direction::left);
+	AppendToVector(moveSequence, FormNudgeSequence(9, Direction::up));
+	moveSequence.push_back(Direction::left);
+	AppendToVector(moveSequence, FormStraightSequence(10, Direction::up));
+	AppendToVector(moveSequence, FormNudgeSequence(9, Direction::right));
+	moveSequence.push_back(Direction::left);
+	moveSequence.push_back(Direction::up);
+	AppendToVector(moveSequence, FormStraightSequence(10, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::down));
+
+	for (auto& move : moveSequence) {
+		levelZero.ProcessPlayerMove(move);
+	}
+
+	EXPECT_FALSE(levelZero.GetIsWon());
+	levelZero.ProcessPlayerMove(Direction::down);
+	EXPECT_TRUE(levelZero.GetIsWon());
+
+	std::vector<Entity*> entities = levelZero.GetAllEntities();
+	for (auto& e : entities) {
+		std::cerr << NounToString(e->GetType()) << "(" << e->GetXPos() << ", " << e->GetYPos() << ")";
+		if (e->GetTextType().has_value()) {
+			std::cerr << ": " << TextTypeToString(e->GetTextType().value());
+		}
+		if (e->GetNoun().has_value()) {
+			std::cerr << " " << NounToString(e->GetNoun().value());
+		}
+		if (e->GetReferredProperty().has_value()) {
+			std::cerr << " " << PropertyToString(e->GetReferredProperty().value());
+		}
+		std::cerr << "\n";
+	}
 }
 
-TEST_F(PlayTest, DISABLED_FlagIsYouRockIsWin) {
+TEST_F(PlayTest, FlagIsYouRockIsWin) {
 	// Replace BABA in BABA IS YOU with FLAG, then make ROCK IS WIN
-	EXPECT_EQ(1, 1);
-	EXPECT_TRUE(true);
+
+	std::vector<Entity*> v = levelZero.GetEntitiesAt(12,7);
+	ASSERT_EQ(v.size(), 1);
+	Entity* baba = v[0]; 
+	std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
+
+	std::vector<Direction> moveSequence{ Direction::left, Direction::left };
+	AppendToVector(moveSequence, FormStraightSequence(4, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(12, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(7, Direction::down));
+	AppendToVector(moveSequence, FormStraightSequence(4, Direction::left));
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormStraightSequence(7, Direction::right));
+	moveSequence.push_back(Direction::down);
+	moveSequence.push_back(Direction::right);
+	AppendToVector(moveSequence, FormStraightSequence(8, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(5, Direction::left));
+	moveSequence.push_back(Direction::up);
+	moveSequence.push_back(Direction::left);
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::left));
+	
+	int stepCount = 0;
+	for (auto& move : moveSequence) {
+		stepCount++;
+		levelZero.ProcessPlayerMove(move);
+		std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
+	}
+
+	EXPECT_FALSE(levelZero.GetIsWon());
+	levelZero.ProcessPlayerMove(Direction::left);
+	std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
+	EXPECT_TRUE(levelZero.GetIsWon());
+
+	std::vector<Entity*> entities = levelZero.GetAllEntities();
+	for (auto &e : entities) {
+		std::cerr << NounToString(e->GetType()) << "(" << e->GetXPos() << ", " << e->GetYPos() << ")";
+		if (e->GetTextType().has_value()) {
+			std::cerr << ": " << TextTypeToString(e->GetTextType().value());
+		}
+		if (e->GetNoun().has_value()) {
+			std::cerr << " " << NounToString(e->GetNoun().value());
+		}
+		if (e->GetReferredProperty().has_value()) {
+			std::cerr << " " << PropertyToString(e->GetReferredProperty().value());
+		}
+		std::cerr << "\n";
+	}
+	
 }
 
-TEST_F(PlayTest, DISABLED_WallIsBabaWallIsFlag) {
+TEST_F(PlayTest, WallIsBabaWallIsFlag) {
 	// Transform Wall into baba and flag simultaneously, while baba is you and flag is win
-	EXPECT_EQ(1, 1);
-	EXPECT_TRUE(true);
+	std::vector<Entity*> v = levelZero.GetEntitiesAt(12, 7);
+	ASSERT_EQ(v.size(), 1);
+	Entity* baba = v[0];
+	std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
+
+	std::vector<Direction> moveSequence{ Direction::down };
+	AppendToVector(moveSequence, FormStraightSequence(10, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::down));
+	AppendToVector(moveSequence, FormStraightSequence(10, Direction::left));
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::left));
+	AppendToVector(moveSequence, FormNudgeSequence(10, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::left));
+	AppendToVector(moveSequence, FormNudgeSequence(9, Direction::up));
+	moveSequence.push_back(Direction::left);
+	AppendToVector(moveSequence, FormStraightSequence(10, Direction::up));
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::down));
+	AppendToVector(moveSequence, FormStraightSequence(14, Direction::right));
+	moveSequence.push_back(Direction::up);
+	AppendToVector(moveSequence, FormStraightSequence(7, Direction::left));
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormMultiNudgeSequence(2, 3, Direction::up, Direction::left));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::right));
+	AppendToVector(moveSequence, FormStraightSequence(3, Direction::up));
+	moveSequence.push_back(Direction::left);
+	moveSequence.push_back(Direction::up);
+	AppendToVector(moveSequence, FormStraightSequence(9, Direction::left));
+	moveSequence.push_back(Direction::down);
+	AppendToVector(moveSequence, FormStraightSequence(2, Direction::right));
+
+	int stepCount = 0;
+	for (auto& move : moveSequence) {
+		stepCount++;
+		levelZero.ProcessPlayerMove(move);
+		std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
+	}
+
+	EXPECT_FALSE(levelZero.GetIsWon());
+	levelZero.ProcessPlayerMove(Direction::right);
+	EXPECT_TRUE(levelZero.GetIsWon());
+
+	std::vector<Entity*> entities = levelZero.GetAllEntities();
+	for (auto& e : entities) {
+		std::cerr << NounToString(e->GetType()) << "(" << e->GetXPos() << ", " << e->GetYPos() << ")";
+		if (e->GetTextType().has_value()) {
+			std::cerr << ": " << TextTypeToString(e->GetTextType().value());
+		}
+		if (e->GetNoun().has_value()) {
+			std::cerr << " " << NounToString(e->GetNoun().value());
+		}
+		if (e->GetReferredProperty().has_value()) {
+			std::cerr << " " << PropertyToString(e->GetReferredProperty().value());
+		}
+		std::cerr << "\n";
+	}
 }

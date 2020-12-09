@@ -22,7 +22,7 @@ public:
 	std::map<Noun, std::set<Noun>> GetPendingTransformations();
 	void ClearPendingTransformations();
 
-	std::map<Noun, std::set<Property>> GetNounsToProperties();
+	std::map<Noun, std::set<Property>> GetRulesByNoun();
 
 	void SetRule(Noun n, Property p);
 

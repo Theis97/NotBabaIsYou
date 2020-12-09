@@ -14,16 +14,30 @@ TEST(TileTest, CanGetEntitiesOfType) {
 
 TEST(TileTest, WinConditionDetected) {
 	Tile t;
+	Ruleset rules;
 	Entity baba = Entity(InitialEntityDetails{ Noun::baba, 0, 0 });
 	Entity flag = Entity(InitialEntityDetails{ Noun::flag, 0, 0 });
 
 	t.PlaceEntity(&baba);
 	t.PlaceEntity(&flag);
 
-	Ruleset rules;
 	rules.SetRule(Noun::baba, Property::you);
 	rules.SetRule(Noun::flag, Property::win);
 
 	bool winner = t.CheckWinCondition(&rules);
-	ASSERT_TRUE(winner);
+	EXPECT_TRUE(winner);
+}
+
+TEST(TileTest, SameEntityIsYouAndWin) {
+	Tile t;
+	Ruleset rules;
+	Entity baba = Entity(InitialEntityDetails{ Noun::baba, 0, 0 });
+
+	t.PlaceEntity(&baba);
+
+	rules.SetRule(Noun::baba, Property::you);
+	rules.SetRule(Noun::baba, Property::win);
+
+	bool winner = t.CheckWinCondition(&rules);
+	EXPECT_TRUE(winner);
 }

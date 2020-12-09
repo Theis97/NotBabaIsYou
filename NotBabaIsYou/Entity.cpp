@@ -1,14 +1,15 @@
 #include "Entity.h"
 
 Entity::Entity(InitialEntityDetails e) 
-	: type(e.type), xPos(e.x), yPos(e.y), textType(e.textType), noun(e.noun), referredProperty(e.prop), orientation(Direction::down) {}
+	: type(e.type), xPos(e.x), yPos(e.y), lastTransformation(-1), textType(e.textType), noun(e.noun), referredProperty(e.prop), orientation(Direction::down) {}
 
-void Entity::Transform(Noun newType) {
+void Entity::Transform(Noun newType, int currentTurn) {
 	if (newType == Noun::text) {
 		textType = TextType::noun;
 		noun = type;
 	}
 	type = newType;
+	lastTransformation = currentTurn;
 }
 
 void Entity::Move(Direction direction) {
@@ -44,6 +45,10 @@ int Entity::GetYPos() {
 
 Noun Entity::GetType() {
 	return type;
+}
+
+int Entity::GetLastTransformation() {
+	return lastTransformation;
 }
 
 std::optional<TextType> Entity::GetTextType() {
