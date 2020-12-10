@@ -7,7 +7,8 @@ Ruleset::Ruleset() {
 void Ruleset::Reset() {
 	nounsToProperties.clear();
 	propertiesToNouns.clear();
-	ClearPendingTransformations();
+	transformationRules.clear();
+	
 	AddPropertyRule(Noun::text, Property::push);
 }
 
@@ -35,7 +36,7 @@ void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
 		case 3:
 			if (currTextType == TextType::noun) {
 				Noun transformTarget = text->GetNoun().value();
-				AddTransformation(nounToApplyTo, transformTarget);
+				AddTransformationRule(nounToApplyTo, transformTarget);
 				nounToApplyTo = transformTarget;
 				segmentCounter = 1;
 			}
@@ -59,12 +60,12 @@ bool Ruleset::IsEntityProperty(Noun type, Property p) {
 	return properties.find(p) != properties.end();
 }
 
-std::map<Noun, std::set<Noun>> Ruleset::GetPendingTransformations() {
-	return pendingTransformations;
+std::set<Noun> Ruleset::GetEntityTypesWith(Property p) {
+	return propertiesToNouns[p];
 }
 
-void Ruleset::ClearPendingTransformations() {
-	pendingTransformations.clear();
+std::map<Noun, std::set<Noun>> Ruleset::GetTransformationRules() {
+	return transformationRules;
 }
 
 std::map<Noun, std::set<Property>> Ruleset::GetRulesByNoun() {
@@ -86,8 +87,8 @@ void Ruleset::AddPropertyRule(Noun n, Property p) {
 	propertiesToNouns[p] = nouns;
 }
 
-void Ruleset::AddTransformation(Noun oldType, Noun newType) {
-	std::set<Noun> transformTypes = pendingTransformations[oldType];
+void Ruleset::AddTransformationRule(Noun oldType, Noun newType) {
+	std::set<Noun> transformTypes = transformationRules[oldType];
 	transformTypes.insert(newType);
-	pendingTransformations[oldType] = transformTypes;
+	transformationRules[oldType] = transformTypes;
 }

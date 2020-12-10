@@ -15,7 +15,7 @@ TEST_F(BehaviorTest, BasicMovement) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessPlayerMove(Direction::right);
+	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 
@@ -44,7 +44,7 @@ TEST_F(BehaviorTest, BasicPush) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessPlayerMove(Direction::right);
+	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
 	EXPECT_TRUE(didMoveAllegedlySucceed);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -74,7 +74,7 @@ TEST_F(BehaviorTest, PushAndStop) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessPlayerMove(Direction::right);
+	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
 	EXPECT_TRUE(didMoveAllegedlySucceed);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -102,7 +102,7 @@ TEST_F(BehaviorTest, PushText) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessPlayerMove(Direction::right);
+	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
 	EXPECT_TRUE(didMoveAllegedlySucceed);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -133,7 +133,7 @@ TEST_F(BehaviorTest, WinCheckWorks) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessPlayerMove(Direction::right);
+	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
 	ASSERT_TRUE(didMoveAllegedlySucceed);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -168,7 +168,7 @@ TEST_F(BehaviorTest, StayInbounds) {
 	Level lvl = Level(width, height, entities);
 
 	for (int i = 0; i < 10; i++) {
-		lvl.ProcessPlayerMove(Direction::left);
+		lvl.ProcessTurn(Direction::left);
 	}
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -196,7 +196,7 @@ TEST_F(BehaviorTest, PushIntoSolidObject) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::left);
+	lvl.ProcessTurn(Direction::left);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -226,7 +226,7 @@ TEST_F(BehaviorTest, DISABLED_BabaIsNotYou) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool actionTaken = lvl.ProcessPlayerMove(Direction::up);
+	bool actionTaken = lvl.ProcessTurn(Direction::up);
 	ASSERT_TRUE(actionTaken);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
@@ -241,7 +241,7 @@ TEST_F(BehaviorTest, DISABLED_BabaIsNotYou) {
 	ASSERT_TRUE(rules->IsEntityProperty(Noun::text, Property::push));
 	ASSERT_FALSE(rules->IsEntityProperty(Noun::baba, Property::you));
 
-	actionTaken = lvl.ProcessPlayerMove(Direction::down);
+	actionTaken = lvl.ProcessTurn(Direction::down);
 	ASSERT_FALSE(actionTaken);
 
 	inLevelEntities = lvl.GetAllEntities();
@@ -269,7 +269,7 @@ TEST_F(BehaviorTest, YouIsStopMovement) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::right);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	int babaCounts[3][3] = {0};
@@ -295,15 +295,15 @@ TEST_F(BehaviorTest, StopAndNotStop) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::up);
+	lvl.ProcessTurn(Direction::up);
 
 	std::vector<Entity*> tileEntities =  lvl.GetEntitiesAt(2, 3);
 	ASSERT_FALSE(tileEntities.empty());
 	ASSERT_TRUE(tileEntities[0]->GetType() == Noun::baba);
 
-	lvl.ProcessPlayerMove(Direction::left);
-	lvl.ProcessPlayerMove(Direction::up);
-	lvl.ProcessPlayerMove(Direction::up);
+	lvl.ProcessTurn(Direction::left);
+	lvl.ProcessTurn(Direction::up);
+	lvl.ProcessTurn(Direction::up);
 
 	tileEntities = lvl.GetEntitiesAt(1, 5);
 	ASSERT_FALSE(tileEntities.empty());
@@ -324,7 +324,7 @@ TEST_F(BehaviorTest, BasicTransformation) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::up);
+	lvl.ProcessTurn(Direction::up);
 	std::vector<Entity*> tileEntities = lvl.GetEntitiesAt(1, 2);
 	ASSERT_EQ(tileEntities.size(), 1);
 	EXPECT_EQ(tileEntities[0]->GetType(), Noun::flag);
@@ -344,12 +344,12 @@ TEST_F(BehaviorTest, ChainedTransformation) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::up);
+	lvl.ProcessTurn(Direction::up);
 	std::vector<Entity*> tileEntities = lvl.GetEntitiesAt(1, 2);
 	ASSERT_EQ(tileEntities.size(), 1);
 	EXPECT_EQ(tileEntities[0]->GetType(), Noun::wall);
 
-	lvl.ProcessPlayerMove(Direction::down);
+	lvl.ProcessTurn(Direction::down);
 	tileEntities = lvl.GetEntitiesAt(1, 2);
 	ASSERT_EQ(tileEntities.size(), 1);
 	EXPECT_EQ(tileEntities[0]->GetType(), Noun::flag);
@@ -371,7 +371,7 @@ TEST_F(BehaviorTest, DoubleTransformation) {
 
 	Level lvl = Level(width, height, entities);
 	std::cerr << "Checkpoint 1\n";
-	lvl.ProcessPlayerMove(Direction::right);
+	lvl.ProcessTurn(Direction::right);
 	std::cerr << "Checkpoint 2\n";
 
 	std::vector<Entity*> tileEntities = lvl.GetEntitiesAt(4, 2);
@@ -400,7 +400,7 @@ TEST_F(BehaviorTest, PreventTransformation) {
 
 	Level lvl = Level(width, height, entities);
 
-	lvl.ProcessPlayerMove(Direction::right);
+	lvl.ProcessTurn(Direction::right);
 	std::vector<Entity*> tileEntities = lvl.GetEntitiesAt(0, 2);
 	ASSERT_EQ(tileEntities.size(), 1);
 	ASSERT_EQ(tileEntities[0]->GetType(), Noun::rock);

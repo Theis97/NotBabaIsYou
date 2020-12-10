@@ -28,7 +28,7 @@ public:
 	void UpdateRules();
 	void TransformEntities(Noun oldType, std::vector<Noun> newTypes);
 
-	bool ProcessPlayerMove(Direction youMoveDirection);
+	bool ProcessTurn(Direction youMoveDirection);
 
 	bool CheckForVictory();
 
@@ -42,7 +42,9 @@ private:
 	int boardHeight;
 	int turnCounter;
 	bool isWon;
+	bool checkRules;
 	std::vector<std::unique_ptr<Entity>> allEntities;
+	std::map<Noun, std::set<Entity*>> entitiesByType;
 	std::vector<std::vector<Tile>> board;
 	Ruleset rules;
 

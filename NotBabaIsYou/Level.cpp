@@ -5,6 +5,7 @@
 Level::Level() {
 	// The tests demanded a default constructor.
 	isWon = false;
+	checkRules = false;
 	turnCounter = 0;
 	boardWidth = 0;
 	boardHeight = 0;
@@ -27,10 +28,14 @@ Level::Level(int width, int height, std::vector<InitialEntityDetails> entityDeta
 
 	for (const auto &details : entityDetails) {
 		allEntities.push_back(std::make_unique<Entity>(details));
+		std::set<Entity*> entitiesWithType = entitiesByType[details.type];
+		entitiesWithType.insert(allEntities.back().get());
+		entitiesByType[details.type] = entitiesWithType;
 		board[details.x][details.y].PlaceEntity(allEntities.back().get());
 	}
 	
 	UpdateRules();
+	checkRules = false;
 }
 
 void Level::updateCoordinates(int &x, int &y, Direction moveDirection) {
@@ -54,17 +59,17 @@ void Level::updateCoordinates(int &x, int &y, Direction moveDirection) {
 
 std::pair<bool, std::vector<Entity*>> Level::IsMoveToValid(int x, int y, Direction moveDirection) {
 	if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight) {
-		return std::make_pair(false, std::vector<Entity*>{});
+		return std::pair(false, std::vector<Entity*>{});
 	}
 
 	std::optional<bool> isOpen = board[x][y].CanPassThrough(&rules);
 
 	if (isOpen.has_value()) {
 		if (isOpen.value()) {
-			return std::make_pair(true, std::vector<Entity*>{});
+			return std::pair(true, std::vector<Entity*>{});
 		}
 		else {
-			return std::make_pair(false, std::vector<Entity*>{});
+			return std::pair(false, std::vector<Entity*>{});
 		}
 	}
 	else {
@@ -76,10 +81,10 @@ std::pair<bool, std::vector<Entity*>> Level::IsMoveToValid(int x, int y, Directi
 		if (pushablesCanMove) {
 			std::vector<Entity*> morePushables = p.second;
 			pushables.insert(pushables.end(), morePushables.begin(), morePushables.end());
-			return std::make_pair(true, pushables);
+			return std::pair(true, pushables);
 		}
 		else {
-			return std::make_pair(false, std::vector<Entity*>{});
+			return std::pair(false, std::vector<Entity*>{});
 		}
 	}
 }
@@ -103,7 +108,7 @@ std::vector<std::pair<Entity*, Direction>> Level::ValidateMoves(std::vector<std:
 			if (isMoveValid) {
 				validatedMoves.push_back(entityMove);
 				for (auto &pushable : entitiesPushedAlong) {
-					validatedMoves.push_back(std::make_pair(pushable, moveDirection));
+					validatedMoves.push_back(std::pair(pushable, moveDirection));
 				}
 			}
 		}
@@ -125,14 +130,19 @@ void Level::MakeMoves(std::vector<std::pair<Entity*, Direction>> movingEntities)
 
 		e->Move(moveDirection);
 		board[x][y].PlaceEntity(e);
+
+		if (e->GetType() == Noun::text) {
+			checkRules = true;
+		}
 	}
 }
 
 void Level::HandleMovement(Direction youMoveDirection) {
 	std::vector<std::pair<Entity*, Direction>> playerControlledEntities;
-	for (auto &e : allEntities) {
-		if (rules.IsEntityProperty(e->GetType(), Property::you)) {
-			playerControlledEntities.push_back(std::make_pair(e.get(), youMoveDirection));
+	std::set<Noun> youTypes = rules.GetEntityTypesWith(Property::you);
+	for (auto &type : youTypes) {
+		for (auto &e : entitiesByType[type]) {
+			playerControlledEntities.push_back(std::pair(e, youMoveDirection));
 		}
 	}
 
@@ -195,9 +205,19 @@ void Level::UpdateRules() {
 // newTypes must contain at least 1 entry
 void Level::TransformEntities(Noun oldType, std::vector<Noun> newTypes) {
 	std::vector<InitialEntityDetails> entitiesToCreate;
-	for (auto &e : allEntities) {
-		if ((e->GetType() == oldType) && (e->GetLastTransformation() != turnCounter)) {
+
+	std::set<Entity*> entitiesToTransform = entitiesByType[oldType];
+	for (auto &e : entitiesToTransform) {
+		if (e->GetLastTransformation() != turnCounter) {
 			e->Transform(newTypes[0], turnCounter);
+
+			std::set<Entity*> entitiesOfOldType = entitiesByType[oldType];
+			entitiesOfOldType.erase(e);
+			entitiesByType[oldType] = entitiesOfOldType;
+
+			std::set<Entity*> entitiesOfNewType = entitiesByType[newTypes[0]];
+			entitiesOfNewType.insert(e);
+			entitiesByType[newTypes[0]] = entitiesOfNewType;
 		}
 		// Simultaneous transformations spawn new entities
 		for (unsigned int i = 1; i < newTypes.size(); i++) {
@@ -210,24 +230,29 @@ void Level::TransformEntities(Noun oldType, std::vector<Noun> newTypes) {
 				newEntityDetails.noun = oldType;
 			}
 			entitiesToCreate.push_back(newEntityDetails);
-			
 		}
 	}
 
 	for (auto& details : entitiesToCreate) {
 		allEntities.push_back(std::make_unique<Entity>(details));
+		std::set<Entity*> entitiesWithType = entitiesByType[details.type];
+		entitiesWithType.insert(allEntities.back().get());
+		entitiesByType[details.type] = entitiesWithType;
 		board[details.x][details.y].PlaceEntity(allEntities.back().get());
 	}
 }
 
-// Rename to ProcessTurn?
-bool Level::ProcessPlayerMove(Direction youMoveDirection) {
+bool Level::ProcessTurn(Direction youMoveDirection) {
 
 	HandleMovement(youMoveDirection);
-	UpdateRules();
 
-	std::map<Noun, std::set<Noun>> pendingTransformations = rules.GetPendingTransformations();
-	for (auto &transformation :  pendingTransformations) {
+	if (checkRules) {
+		UpdateRules();
+		checkRules = false;
+	}
+	
+	std::map<Noun, std::set<Noun>> transformations = rules.GetTransformationRules();
+	for (auto &transformation : transformations) {
 		Noun oldType = transformation.first;
 		std::set<Noun> newTypeSet = transformation.second;
 
@@ -237,8 +262,6 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 			TransformEntities(oldType, newTypes);
 		}
 	}
-	rules.ClearPendingTransformations();
-
 
 	isWon = CheckForVictory();
 
@@ -247,9 +270,10 @@ bool Level::ProcessPlayerMove(Direction youMoveDirection) {
 }
 
 bool Level::CheckForVictory() {
-	for (int x = 0; x < boardWidth; x++) {
-		for (int y = 0; y < boardHeight; y++) {
-			if (board[x][y].CheckWinCondition(&rules)) {
+	std::set<Noun> winTypes = rules.GetEntityTypesWith(Property::win);
+	for (auto &type : winTypes) {
+		for (auto& winEntity : entitiesByType[type]) {
+			if (board[winEntity->GetXPos()][winEntity->GetYPos()].CheckWinCondition(&rules)) {
 				return true;
 			}
 		}
@@ -263,7 +287,7 @@ bool Level::GetIsWon() {
 
 std::vector<Entity*> Level::GetAllEntities() {
 	std::vector<Entity*> entitiesToObserve;
-	for (int i = 0; i < allEntities.size(); i++) {
+	for (unsigned int i = 0; i < allEntities.size(); i++) {
 		entitiesToObserve.push_back(allEntities[i].get());
 	}
 	return entitiesToObserve;

@@ -46,11 +46,11 @@ PlayTest::PlayTest() {
 // There's also a rock that gets pushed along the way.
 TEST_F(PlayTest, StraightforwardSolution) {
 	for (int i = 0; i < 7; i++) {
-		levelZero.ProcessPlayerMove(Direction::right);
+		levelZero.ProcessTurn(Direction::right);
 	}
 
 	EXPECT_FALSE(levelZero.GetIsWon());
-	levelZero.ProcessPlayerMove(Direction::right);
+	levelZero.ProcessTurn(Direction::right);
 	EXPECT_TRUE(levelZero.GetIsWon());
 }
 
@@ -74,11 +74,11 @@ TEST_F(PlayTest, BabaIsYouBabaIsWin) {
 	AppendToVector(moveSequence, FormStraightSequence(4, Direction::left));
 
 	for (auto &move : moveSequence) {
-		levelZero.ProcessPlayerMove(move);
+		levelZero.ProcessTurn(move);
 	}
 
 	EXPECT_FALSE(levelZero.GetIsWon());
-	levelZero.ProcessPlayerMove(Direction::left);
+	levelZero.ProcessTurn(Direction::left);
 	EXPECT_TRUE(levelZero.GetIsWon());
 }
 
@@ -102,11 +102,11 @@ TEST_F(PlayTest, WallIsFlagIsWin) {
 	AppendToVector(moveSequence, FormStraightSequence(3, Direction::down));
 
 	for (auto& move : moveSequence) {
-		levelZero.ProcessPlayerMove(move);
+		levelZero.ProcessTurn(move);
 	}
 
 	EXPECT_FALSE(levelZero.GetIsWon());
-	levelZero.ProcessPlayerMove(Direction::down);
+	levelZero.ProcessTurn(Direction::down);
 	EXPECT_TRUE(levelZero.GetIsWon());
 
 	std::vector<Entity*> entities = levelZero.GetAllEntities();
@@ -154,12 +154,12 @@ TEST_F(PlayTest, FlagIsYouRockIsWin) {
 	int stepCount = 0;
 	for (auto& move : moveSequence) {
 		stepCount++;
-		levelZero.ProcessPlayerMove(move);
+		levelZero.ProcessTurn(move);
 		std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
 	}
 
 	EXPECT_FALSE(levelZero.GetIsWon());
-	levelZero.ProcessPlayerMove(Direction::left);
+	levelZero.ProcessTurn(Direction::left);
 	std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
 	EXPECT_TRUE(levelZero.GetIsWon());
 
@@ -216,12 +216,12 @@ TEST_F(PlayTest, WallIsBabaWallIsFlag) {
 	int stepCount = 0;
 	for (auto& move : moveSequence) {
 		stepCount++;
-		levelZero.ProcessPlayerMove(move);
+		levelZero.ProcessTurn(move);
 		std::cerr << "Baba is at (" << baba->GetXPos() << ", " << baba->GetYPos() << ")\n";
 	}
 
 	EXPECT_FALSE(levelZero.GetIsWon());
-	levelZero.ProcessPlayerMove(Direction::right);
+	levelZero.ProcessTurn(Direction::right);
 	EXPECT_TRUE(levelZero.GetIsWon());
 
 	std::vector<Entity*> entities = levelZero.GetAllEntities();

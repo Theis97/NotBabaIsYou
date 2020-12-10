@@ -41,7 +41,7 @@ TEST(RulesetTest, ParsingTransformationRules) {
 	textChunks.push_back(&flagText);
 
 	rules.ParseRule(textChunks);
-	std::map<Noun, std::set<Noun>> transformations = rules.GetPendingTransformations();
+	std::map<Noun, std::set<Noun>> transformations = rules.GetTransformationRules();
 	ASSERT_FALSE(transformations.empty());
 
 	std::set<Noun> babaTransformations = transformations[Noun::baba];
