@@ -20,12 +20,12 @@ Currently, the only rules that Not Baba supports are of the form `{noun} IS {pro
 
 Here's a breakdown of what each class in this repo does:
 
-* **Entity**: Keeps track of the state of a single entity in the level. 
-* **Tile**: Keeps track of the state of a single tile in the level. Lets Level know about local interactions between entities.
-* **Ruleset**: Responsible for understanding how to read rules and for keeping track of what rules are currently in play. Tile and Level consult this class to understand how entities should behave.
-* **Level**: Keeps track of the state of the level as a whole, responsible for updating the state of the level in response to player actions. In charge of moving entities from tile to tile, spawning new entities, finding pieces of text that might form a rule to give to Ruleset.
+* **Entity**: Keeps track of the state of a single entity in the level. (Entity.h & Entity.cpp)
+* **Tile**: Keeps track of the state of a single tile in the level. Lets Level know about local interactions between entities. (Tile.h & Tile.cpp)
+* **Ruleset**: Responsible for understanding how to read rules and for keeping track of what rules are currently in play. Tile and Level consult this class to understand how entities should behave. (Ruleset.h & Ruleset.cpp)
+* **Level**: Keeps track of the state of the level as a whole, responsible for updating the state of the level in response to player actions. In charge of moving entities from tile to tile, spawning new entities, finding pieces of text that might form a rule to give to Ruleset. (Level.h & Level.cpp)
 
-More details can be found in the source code.
+More details can be found in the source code, under the folder NotBabaIsYou. 
 
 ## Features
 
