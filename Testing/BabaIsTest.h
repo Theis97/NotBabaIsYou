@@ -16,6 +16,9 @@ protected:
 	std::vector<Direction> FormNudgeSequence(int nudgeDepth, Direction pushTowards);
 	std::vector<Direction> FormMultiNudgeSequence(int nudgeDepth, int length, Direction pushTowards, Direction moveAlong);
 
-private:
 	Direction GetOpposite(Direction d);
+
+	std::string NounToString(Noun n);
+	std::string PropertyToString(Property p);
+	std::string TextTypeToString(TextType t);
 };

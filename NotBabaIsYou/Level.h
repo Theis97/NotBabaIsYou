@@ -14,9 +14,15 @@ public:
 	Level();
 	Level(int width, int height, std::vector<InitialEntityDetails> entityDetails);
 
-	// Attempts to move each entitiy in entities (all assumed to be from the same tile) 
-	// in the direction given by moveDirection.
-	bool TryMoveFromSingleTile(std::vector<Entity*> entities, Direction moveDirection);
+	std::pair<bool, std::vector<Entity*>> IsMoveToValid(int x, int y, Direction moveDirection);
+
+	// Of the entities passed in, this only returns the ones that should
+	// be allowed to move in the directions they are paired with. It also adds in
+	// any entities that need to be pushed in order to move in that direction.
+	std::vector<std::pair<Entity*, Direction>> ValidateMoves(std::vector<std::pair<Entity*, Direction>> movingEntities);
+	void MakeMoves(std::vector<std::pair<Entity*, Direction>> movingEntities);
+	void HandleMovement(Direction youMoveDirection);
+
 	void CheckColumnForRules(int column);
 	void CheckRowForRules(int row);
 	void UpdateRules();
@@ -24,15 +30,21 @@ public:
 
 	bool ProcessPlayerMove(Direction youMoveDirection);
 
+	bool CheckForVictory();
+
 	bool GetIsWon();
 	std::vector<Entity*> GetAllEntities();
 	std::vector<Entity*> GetEntitiesAt(int x, int y);
 	Ruleset* GetRules();
 
 private:
+	int boardWidth;
+	int boardHeight;
 	int turnCounter;
 	bool isWon;
 	std::vector<std::unique_ptr<Entity>> allEntities;
 	std::vector<std::vector<Tile>> board;
 	Ruleset rules;
+
+	void updateCoordinates(int& x, int& y, Direction moveDirection);
 };

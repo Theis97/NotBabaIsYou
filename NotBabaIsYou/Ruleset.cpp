@@ -51,7 +51,6 @@ void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
 			// something is wrong here
 			break;
 		}
-
 	}
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+// Used to neatly initialize Entities
 struct InitialEntityDetails {
 	Noun type{};
 	int x{};

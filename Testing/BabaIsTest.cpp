@@ -78,6 +78,63 @@ std::vector<Direction> BabaIsTest::FormMultiNudgeSequence(int nudgeDepth, int le
 	return result;
 }
 
+std::string BabaIsTest::NounToString(Noun n) {
+	std::string s;
+	switch (n) {
+	case Noun::baba:
+		s = "Baba";
+		break;
+	case Noun::flag:
+		s = "Flag";
+		break;
+	case Noun::rock:
+		s = "Rock";
+		break;
+	case Noun::wall:
+		s = "Wall";
+		break;
+	case Noun::text:
+		s = "Text";
+		break;
+	}
+	return s;
+}
+
+std::string BabaIsTest::PropertyToString(Property p) {
+	std::string s;
+	switch (p) {
+	case Property::you:
+		s = "You";
+		break;
+	case Property::stop:
+		s = "Stop";
+		break;
+	case Property::push:
+		s = "Push";
+		break;
+	case Property::win:
+		s = "Win";
+		break;
+	}
+	return s;
+}
+
+std::string BabaIsTest::TextTypeToString(TextType t) {
+	std::string s;
+	switch (t) {
+	case TextType::noun:
+		s = "Noun";
+		break;
+	case TextType::is:
+		s = "Is";
+		break;
+	case TextType::property:
+		s = "Property";
+		break;
+	}
+	return s;
+}
+
 Direction BabaIsTest::GetOpposite(Direction d) {
 	Direction opposite = Direction::down;
 	switch (d) {

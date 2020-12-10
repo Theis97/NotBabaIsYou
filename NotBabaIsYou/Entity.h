@@ -32,7 +32,11 @@ protected:
 	int yPos;
 	int lastTransformation;
 	Direction orientation;
+
+	// All entities of type "text" are expected to have a TextType.
 	std::optional<TextType> textType;
+	// All entities with a TextType of "noun" are expected to hold the noun they refer to
 	std::optional<Noun> noun;
+	// All entities with a TexType of "property" are expected to hold the property they refer to
 	std::optional<Property> referredProperty;
 };

@@ -22,9 +22,11 @@ public:
 	std::map<Noun, std::set<Noun>> GetPendingTransformations();
 	void ClearPendingTransformations();
 
+	// Returns a mapping of nouns to the set of properties
+	// that currently apply to them.
 	std::map<Noun, std::set<Property>> GetRulesByNoun();
 
-	void SetRule(Noun n, Property p);
+	void SetRule(Noun n, Property p); // remove this
 
 private:
 	void AddPropertyRule(Noun n, Property p);

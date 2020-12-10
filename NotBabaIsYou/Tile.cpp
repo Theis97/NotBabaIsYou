@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Tile.h"
 
 void Tile::PlaceEntity(Entity* e) {
@@ -38,7 +37,7 @@ std::vector<Entity*> Tile::GetEntities(Property p, Ruleset* rules) {
 	return entitiesWithProperty;
 }
 
-std::optional<bool> Tile::canPassThrough(Ruleset* rules) {
+std::optional<bool> Tile::CanPassThrough(Ruleset* rules) {
 	bool pushablePresent = false;
 	for (auto& e : occupants) {
 		Noun type = e->GetType();
