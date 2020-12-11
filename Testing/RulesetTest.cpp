@@ -1,7 +1,11 @@
 #include "pch.h"
+#include "BabaIsTest.h"
 #include "../NotBabaIsYou/Ruleset.h"
 
-TEST(RulesetTest, BasicRuleParsing) {
+
+class RulesetTest : public BabaIsTest {};
+
+TEST_F(RulesetTest, BasicRuleParsing) {
 	Ruleset rules = Ruleset();
 
 	std::vector<Entity*> textChunks;
@@ -14,21 +18,31 @@ TEST(RulesetTest, BasicRuleParsing) {
 	textChunks.push_back(&youText);
 
 	rules.ParseRule(textChunks);
-	ASSERT_FALSE(rules.GetRulesByNoun().empty());
-	EXPECT_TRUE(rules.IsEntityProperty(Noun::baba, Property::you));
+	ASSERT_FALSE(rules.GetPropertyRules().empty());
+	EXPECT_TRUE(rules.DoesTypeHaveProperty(Noun::baba, Property::you));
 }
 
-TEST(RulesetTest, RulesResetProperly) {
+TEST_F(RulesetTest, RulesResetProperly) {
 	Ruleset rules = Ruleset();
 
-	rules.SetRule(Noun::baba, Property::you);
-	EXPECT_TRUE(rules.IsEntityProperty(Noun::baba, Property::you));
+	std::vector<Entity*> textChunks;
+
+	Entity babaText = Entity(InitialEntityDetails{ Noun::text, 0, 2, TextType::noun, Noun::baba });
+	Entity isText = Entity(InitialEntityDetails{ Noun::text, 1, 2, TextType::is });
+	Entity youText = Entity(InitialEntityDetails{ Noun::text, 2, 2, TextType::property, std::nullopt, Property::you });
+	textChunks.push_back(&babaText);
+	textChunks.push_back(&isText);
+	textChunks.push_back(&youText);
+
+	rules.ParseRule(textChunks);
+	
+	EXPECT_TRUE(rules.DoesTypeHaveProperty(Noun::baba, Property::you));
 
 	rules.Reset();
-	EXPECT_FALSE(rules.IsEntityProperty(Noun::baba, Property::you));
+	EXPECT_FALSE(rules.DoesTypeHaveProperty(Noun::baba, Property::you));
 }
 
-TEST(RulesetTest, ParsingTransformationRules) {
+TEST_F(RulesetTest, ParsingTransformationRules) {
 	Ruleset rules = Ruleset();
 
 	std::vector<Entity*> textChunks;

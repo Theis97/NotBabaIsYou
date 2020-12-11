@@ -15,11 +15,9 @@ TEST_F(BehaviorTest, BasicMovement) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
-
-	ASSERT_TRUE(didMoveAllegedlySucceed);
 
 	for (auto &e : inLevelEntities) {
 		if (e->GetType() == Noun::baba) {
@@ -44,8 +42,7 @@ TEST_F(BehaviorTest, BasicPush) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
-	EXPECT_TRUE(didMoveAllegedlySucceed);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -74,8 +71,7 @@ TEST_F(BehaviorTest, PushAndStop) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
-	EXPECT_TRUE(didMoveAllegedlySucceed);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -102,8 +98,7 @@ TEST_F(BehaviorTest, PushText) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
-	EXPECT_TRUE(didMoveAllegedlySucceed);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -133,8 +128,7 @@ TEST_F(BehaviorTest, WinCheckWorks) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool didMoveAllegedlySucceed = lvl.ProcessTurn(Direction::right);
-	ASSERT_TRUE(didMoveAllegedlySucceed);
+	lvl.ProcessTurn(Direction::right);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -149,8 +143,8 @@ TEST_F(BehaviorTest, WinCheckWorks) {
 	}
 
 	Ruleset* rules = lvl.GetRules();
-	ASSERT_TRUE(rules->IsEntityProperty(Noun::baba, Property::you));
-	ASSERT_TRUE(rules->IsEntityProperty(Noun::flag, Property::win));
+	ASSERT_TRUE(rules->DoesTypeHaveProperty(Noun::baba, Property::you));
+	ASSERT_TRUE(rules->DoesTypeHaveProperty(Noun::flag, Property::win));
 
 	ASSERT_TRUE(lvl.GetIsWon());
 }
@@ -215,8 +209,7 @@ TEST_F(BehaviorTest, PushIntoSolidObject) {
 	}
 }
 
-TEST_F(BehaviorTest, DISABLED_BabaIsNotYou) {
-	// TODO: fix this
+TEST_F(BehaviorTest, BabaIsNotYou) {
 	int width = 3;
 	int height = 3;
 	std::vector<InitialEntityDetails> entities;
@@ -226,8 +219,10 @@ TEST_F(BehaviorTest, DISABLED_BabaIsNotYou) {
 
 	Level lvl = Level(width, height, entities);
 
-	bool actionTaken = lvl.ProcessTurn(Direction::up);
-	ASSERT_TRUE(actionTaken);
+	bool youExist = lvl.DoYouExist();
+	EXPECT_TRUE(youExist);
+
+	lvl.ProcessTurn(Direction::up);
 
 	std::vector<Entity*> inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
@@ -238,17 +233,18 @@ TEST_F(BehaviorTest, DISABLED_BabaIsNotYou) {
 	}
 
 	Ruleset* rules = lvl.GetRules();
-	ASSERT_TRUE(rules->IsEntityProperty(Noun::text, Property::push));
-	ASSERT_FALSE(rules->IsEntityProperty(Noun::baba, Property::you));
+	EXPECT_TRUE(rules->DoesTypeHaveProperty(Noun::text, Property::push));
+	EXPECT_FALSE(rules->DoesTypeHaveProperty(Noun::baba, Property::you));
 
-	actionTaken = lvl.ProcessTurn(Direction::down);
-	ASSERT_FALSE(actionTaken);
+	lvl.ProcessTurn(Direction::down);
+	youExist = lvl.DoYouExist();
+	EXPECT_FALSE(youExist);
 
 	inLevelEntities = lvl.GetAllEntities();
 	for (auto& e : inLevelEntities) {
 		if (e->GetType() == Noun::baba) {
-			ASSERT_EQ(e->GetXPos(), 2);
-			ASSERT_EQ(e->GetYPos(), 1);
+			EXPECT_EQ(e->GetXPos(), 2);
+			EXPECT_EQ(e->GetYPos(), 1);
 		}
 	}
 }

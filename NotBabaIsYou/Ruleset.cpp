@@ -9,11 +9,11 @@ void Ruleset::Reset() {
 	propertiesToNouns.clear();
 	transformationRules.clear();
 	
+	// For now, TEXT is always PUSH.
 	AddPropertyRule(Noun::text, Property::push);
 }
 
 void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
-	// NOUN IS NOUN & NOUN IS PROPERTY are currently the only valid rule forms
 	int segmentCounter = 0;
 	Noun nounToApplyTo;
 	for (auto &text : textEntities) {
@@ -35,12 +35,16 @@ void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
 			break;
 		case 3:
 			if (currTextType == TextType::noun) {
+				// {nounToApplyTo} IS {transformTarget}
 				Noun transformTarget = text->GetNoun().value();
 				AddTransformationRule(nounToApplyTo, transformTarget);
+
+				// Rules are allowed to overlap, this could be the start of another
 				nounToApplyTo = transformTarget;
 				segmentCounter = 1;
 			}
 			else if (currTextType == TextType::property) {
+				// {nounToApplyTo} IS {whatever property this text represents}
 				AddPropertyRule(nounToApplyTo, text->GetReferredProperty().value());
 				segmentCounter = 0;
 			}
@@ -49,13 +53,14 @@ void Ruleset::ParseRule(std::vector<Entity*> textEntities) {
 			}
 			break;
 		default:
-			// something is wrong here
+			// This really shouldn't happen
+			segmentCounter = 0;
 			break;
 		}
 	}
 }
 
-bool Ruleset::IsEntityProperty(Noun type, Property p) {
+bool Ruleset::DoesTypeHaveProperty(Noun type, Property p) {
 	std::set<Property> properties = nounsToProperties[type];
 	return properties.find(p) != properties.end();
 }
@@ -64,18 +69,13 @@ std::set<Noun> Ruleset::GetEntityTypesWith(Property p) {
 	return propertiesToNouns[p];
 }
 
-std::map<Noun, std::set<Noun>> Ruleset::GetTransformationRules() {
-	return transformationRules;
-}
-
-std::map<Noun, std::set<Property>> Ruleset::GetRulesByNoun() {
+std::map<Noun, std::set<Property>> Ruleset::GetPropertyRules() {
 	return nounsToProperties;
 }
 
-void Ruleset::SetRule(Noun n, Property p) {
-	AddPropertyRule(n, p);
+std::map<Noun, std::set<Noun>> Ruleset::GetTransformationRules() {
+	return transformationRules;
 }
-
 
 void Ruleset::AddPropertyRule(Noun n, Property p) {
 	std::set<Property> properties = nounsToProperties[n];

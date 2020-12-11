@@ -47,6 +47,8 @@ std::vector<InitialEntityDetails> BabaIsTest::ConstructFilledArea(Noun n, int bo
 	return entityDetails;
 }
 
+
+
 void BabaIsTest::AppendToVector(std::vector<InitialEntityDetails>& receiving, std::vector<InitialEntityDetails>& source) {
 	receiving.insert(receiving.end(), source.begin(), source.end());
 }

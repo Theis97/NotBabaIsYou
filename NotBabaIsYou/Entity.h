@@ -18,22 +18,30 @@ public:
 	int GetXPos();
 	int GetYPos();
 	Noun GetType();
-	int GetLastTransformation();
+	int GetLastTransformed();
+
 	std::optional<TextType> GetTextType();
 	std::optional<Noun> GetNoun();
 	std::optional<Property> GetReferredProperty();
 
+	// Updates the entity's internal record of its
+	// position when moved in the given direction. 
+	// Does not affect board state.
 	void Move(Direction direction);
-	void Transform(Noun newType, int currentTurn);
 
-protected:
-	Noun type;
+	void DoTransformation(Noun newType, int currentTurn);
+
+private:
 	int xPos;
 	int yPos;
-	int lastTransformation;
 	Direction orientation;
+	Noun type;
 
-	// All entities of type "text" are expected to have a TextType.
+	// Entities can only be transformed once per turn, so we keep track
+	int lastTransformed;
+
+	// The following only have meaning for text entities.
+	// All text entities are expected to have a TextType.
 	std::optional<TextType> textType;
 	// All entities with a TextType of "noun" are expected to hold the noun they refer to
 	std::optional<Noun> noun;
